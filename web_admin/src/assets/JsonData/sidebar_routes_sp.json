@@ -1,0 +1,12 @@
+[
+  {
+    "display_name": "Requests",
+    "route": "/requests",
+    "icon": "bx bx-package"
+  },
+  {
+    "display_name": "Reports",
+    "route": "/reports",
+    "icon": "bx bx-package"
+  }
+]

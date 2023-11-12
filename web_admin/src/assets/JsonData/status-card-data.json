@@ -1,0 +1,17 @@
+[
+  {
+    "icon": "bx bx-user-pin",
+    "count": "5",
+    "title": "khách hàng"
+  },
+  {
+    "icon": "bx bx-package",
+    "count": "10",
+    "title": " thiết bị"
+  },
+  {
+    "icon": "bx bx-package",
+    "count": "10",
+    "title": " thiết bị lỗi"
+  }
+]

@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "524535805292",
+    "project_id": "iot-smarthome-c5265",
+    "storage_bucket": "iot-smarthome-c5265.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:524535805292:android:07a784eb192547f5996f49",
+        "android_client_info": {
+          "package_name": "com.example.iot_demo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "524535805292-7br2e60p83g1iqagujq4olptcbupr7ni.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.iot_demo",
+            "certificate_hash": "a6dd96b6f5cebc8dadba0d42ab891c712bcfb89e"
+          }
+        },
+        {
+          "client_id": "524535805292-80pnc9g8286mtkl2610i8dfqe32jbrj4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhwaZNh-FpHSjYotE650sG4P9rGAVSDUU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "524535805292-80pnc9g8286mtkl2610i8dfqe32jbrj4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

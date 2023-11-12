@@ -1,0 +1,28 @@
+[
+    {
+        "role": "admin",
+        "_id": "63f31513fbbd492cc86b16e1",
+        "name": "giang Nguyen",
+        "email": "giang1234@gmail.com",
+        "password": "$2b$10$KbyDZuBuxUag6NqhvcqpIu18dkkcfBYtaeSF1KZ57vFe19y5LlimG",
+        "location": "phòng 301 tòa AC",
+        "address": "số 3 ngõ 78 duy tân, cầu giấy, Hà nội",
+        "phone": "0868333111",
+        "createdDate": "2023-02-20T06:37:07.686Z",
+        "modifiedDate": "2023-02-20T06:37:07.686Z",
+        "__v": 0
+    },
+    {
+        "role": "customer",
+        "_id": "63f31527fbbd492cc86b16e2",
+        "name": "giang Nguyen 2",
+        "email": "giang123@gmail.com",
+        "password": "$2b$10$yRzBK6uKg9Dwf0ao/GJ7kOsCw/H4UfHIs7c4U2BiXjD83M3Cr7c.e",
+        "location": "phòng 301 tòa AC",
+        "address": "số 3 ngõ 78 duy tân, cầu giấy, Hà nội",
+        "phone": "0868333111",
+        "createdDate": "2023-02-20T06:37:27.508Z",
+        "modifiedDate": "2023-02-20T06:37:27.508Z",
+        "__v": 0
+    }
+]
