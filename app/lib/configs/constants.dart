@@ -4,8 +4,8 @@ import 'colors.dart';
 class AppConstants {
   AppConstants._();
   static const String apiKey="";
-  //static const String baseUrl="http://192.168.0.68:4000/";
-  static const String baseUrl="https://server-smarthome.herokuapp.com/";
+  static const String baseUrl="http://192.168.52.103:4000/";
+  // static const String baseUrl="https://server-smarthome.herokuapp.com/";
 
   // Dio
   static const int receiveTimeout = 10000;

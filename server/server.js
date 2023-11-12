@@ -10,9 +10,9 @@ const Sensor = require('./models/Sensor');
 
 const mqtt = require('mqtt')
 
-const accountSid = "ACf7576834793c6a73350507af5fc4c341";
-const authToken = "9d5fb086575622a24f62296b6a436de5";
-const clientsms = require("twilio")(accountSid, authToken);
+// const accountSid = "ACf7576834793c6a73350507af5fc4c341";
+// const authToken = "9d5fb086575622a24f62296b6a436de5";
+// const clientsms = require("twilio")(accountSid, authToken);
 
 
 
@@ -24,7 +24,7 @@ const options = {
 const client = mqtt.connect(options);
 client.on('connect', function () {
 	console.log('Connected');
-	client.subscribe('demo', function (err) {
+	client.subscribe('demo1', function (err) {
 		if (!err) {
 			console.log('Subcribing to MQTT Broker!');
 		}
@@ -36,7 +36,8 @@ client.on('error', function (error) {
 
 
 //Connect to mongodb database
-mongoose.connect('mongodb+srv://admin:aloalo123@cluster0.ex56l.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', {
+// mongoose.connect('mongodb+srv://admin:aloalo123@cluster0.ex56l.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', {
+mongoose.connect('mongodb+srv://nam14nt:123456pk@cluster-mongo-api.q8poj36.mongodb.net/?retryWrites=true&w=majority', {
 	useUnifiedTopology: true,
 	useNewUrlParser: true,
 });
@@ -49,11 +50,11 @@ db.once('open', () => {
 			let content = JSON.parse(message.toString());
 			console.log("content" + content);
 
-			if(content.gasVal>600){
-				clientsms.messages
-  					.create({ body: "Phat hien khi gas, hay kiem tra", from: "+13156108151", to: "+84868349331" })
-  					.then(message => console.log(message.sid));
-			}
+			// if(content.gasVal>600){
+			// 	clientsms.messages
+  			// 		.create({ body: "Phat hien khi gas, hay kiem tra", from: "+13156108151", to: "+84868349331" })
+  			// 		.then(message => console.log(message.sid));
+			// }
 
 			//Save to db
 			//Create a new Sensor

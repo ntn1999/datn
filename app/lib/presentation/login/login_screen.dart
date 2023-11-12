@@ -49,8 +49,8 @@ class _BodyLoginState extends State<BodyLogin> {
   @override
   void initState() {
     loginBloc = BlocProvider.of<LoginBloc>(context);
-    email.text = 'giang114@gmail.com';
-    password.text = '123456a';
+    email.text = 'nam14nt@gmail.com';
+    password.text = '123456pk';
     _obscureText = false;
   }
 
@@ -266,7 +266,7 @@ class _BodyLoginState extends State<BodyLogin> {
                       borderRadius: const BorderRadius.all(Radius.circular(6)),
                       child: ElevatedButton(
                         child: const Text(
-                          "Sign In",
+                          "Sign In haha",
                           style: TextStyle(color: Colors.white),
                         ),
                         onPressed: () {
