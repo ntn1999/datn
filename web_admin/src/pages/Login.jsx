@@ -2,7 +2,7 @@ import { Button, Form, Input, message } from "antd";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
-import banner from "../assets/images/banner.avif";
+import banner from "../assets/images/login.jpg";
 import AuthAction from "../redux/actions/AuthAction";
 import authApi from "../service/authService";
 

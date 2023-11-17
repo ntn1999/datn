@@ -237,12 +237,12 @@ const Customers = () => {
     <div>
       <div className="row justify-between">
         <div className="col-3">
-          <h2 className="page-header">Danh sách khách hàng</h2>
+          <h2 className="page-header">Customers</h2>
         </div>
         <div className="col-3">
           <div style={{ paddingRight: "55px" }} className="row justify-end">
             <Button type="primary" onClick={showModalCreate}>
-              + Thêm mới khách hàng
+              New customer
             </Button>
           </div>
         </div>

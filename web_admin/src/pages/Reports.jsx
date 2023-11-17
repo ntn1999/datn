@@ -215,7 +215,7 @@ const Reports = () => {
     <div>
       <div className="row justify-between">
         <div className="col-3">
-          <h2 className="page-header">Báo cáo</h2>
+          <h2 className="page-header">Report</h2>
         </div>
         <div className="col-3">
           {/* <div style={{ paddingRight: "55px" }} className="row justify-end">

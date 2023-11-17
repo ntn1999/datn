@@ -20,7 +20,7 @@ const store = createStore(
   rootReducer
 )
 
-document.title = 'Smart home'
+document.title = 'AQI system'
 
 ReactDOM.render(
   <Provider store={store}>

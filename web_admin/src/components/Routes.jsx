@@ -7,6 +7,7 @@ import Dashboard from "../pages/Dashboard";
 import Requests from "../pages/Requests";
 import Reports from "../pages/Reports";
 import CustomerDetail from "../pages/CustomerDetail";
+import Location from "../pages/Location";
 
 const Routes = () => {
   return (
@@ -14,6 +15,7 @@ const Routes = () => {
       <Route path="/" exact component={Dashboard} />
       <Route path="/customers" exact component={Customers} />
       <Route path="/customer/:id" exact component={CustomerDetail} />
+      <Route path="/location/:id" exact component={Location} />
       <Route path="/requests" exact component={Requests} />
       <Route path="/reports" exact component={Reports} />
     </Switch>

@@ -5,17 +5,12 @@
         "icon": "bx bx-category-alt"
     },
     {
-        "display_name": "Users",
+        "display_name": "Customers",
         "route": "/customers",
         "icon": "bx bx-user-pin"
     },
     {
-        "display_name": "Requests",
-        "route": "/requests",
-        "icon": "bx bx-package"
-    },
-    {
-        "display_name": "Reports",
+        "display_name": "Report",
         "route": "/reports",
         "icon": "bx bx-package"
     }
