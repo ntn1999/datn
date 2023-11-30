@@ -39,6 +39,7 @@ router.get("/", async (req, res) => {
       let value = {
         humidityAir: 0,
         temperature: 0,
+        gasVal: 0,
         time: i,
       };
 
@@ -55,6 +56,7 @@ router.get("/", async (req, res) => {
           if (item && item !== "null" && item !== "undefined") {
             value.humidityAir += item.humidityAir;
             value.temperature += item.temperature;
+            value.gasVal += item.gasVal;
             count++;
           }
         });
@@ -63,6 +65,7 @@ router.get("/", async (req, res) => {
       if (count != 0) {
         value.humidityAir = value.humidityAir / count;
         value.temperature = value.temperature / count;
+        value.gasVal = value.gasVal / count;
       }
       result.push(value);
     }

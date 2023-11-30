@@ -14,6 +14,14 @@ const sensorSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    p25: {
+      type: Number,
+      required: true,
+    },
+    p10: {
+      type: Number,
+      required: true,
+    },
     createdDate: {
       type: Date,
       default: Date.now,

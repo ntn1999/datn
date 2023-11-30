@@ -26,10 +26,13 @@ import {
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import instance from "../service/client";
-import axios from 'axios';
-const { Option } = Select;
+import axios from "axios";
+import mqtt from "mqtt";
 
 const Dashboard = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const { Option } = Select;
+  const { TextArea } = Input;
   const columns = [
     {
       title: "",
@@ -115,20 +118,66 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [formEdit] = Form.useForm();
   const [form] = Form.useForm();
-
+  const [mqttData, setMqttData] = useState("");
   const [confirmLoading, setConfirmLoading] = useState(false);
- 
-
   const history = useHistory();
+  const [city, setCity] = useState();
+  const [district, setDistrict] = useState([]);
+  const [ward, setWard] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+
+  const [openCreateReport, setOpenCreateReport] = useState(false);
+  const [formReport] = Form.useForm();
+  const [customer, setCustomer] = useState();
+  const [deviceSelected, setDeviceSelected] = useState();
+  const [deviceDeleteSelected, setDeviceDeleteSelected] = useState(null);
 
   useEffect(() => {
+    connectMqtt();
+    getListLocation();
+    getApi();
+    loadData();
     const user = JSON.parse(localStorage.getItem("user"));
+    console.log(user, "ssssssss");
     if (user.role !== "admin") {
       history.push("/requests");
     }
   }, []);
 
-  useEffect(() => {
+  const connectMqtt = () => {
+    const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
+    client.on("connect", () => {
+      console.log("Connected to MQTT broker");
+      // Đăng ký để nhận dữ liệu từ topic 'demo1'
+      client.subscribe("demo1");
+    });
+
+    // Khi nhận được dữ liệu từ MQTT broker
+    client.on("message", (topic, message) => {
+      setMqttData(message.toString());
+    });
+
+    return () => {
+      client.end();
+    };
+  };
+
+  const getListLocation = () => {
+    const url =
+      "https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json";
+    axios
+      .get(url)
+      .then((response) => {
+        setCities(response.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const getApi = () => {
     let mounted = true;
     const getUserList = customerApi.getAll("/user/userList?role=customer");
     const getDeviceList = deviceApi.getAll("/device/listDevice");
@@ -153,54 +202,92 @@ const Dashboard = () => {
       });
 
     return () => (mounted = false);
-  }, []);
+  };
 
   const showModalCreate = () => {
     console.log("showModalCreate");
     setOpenCreate(true);
   };
 
-  const hideModalCreate = () => {
-    setOpenCreate(false);
-  };
-
-  const hideModalEdit = () => {
-    setOpenEdit(false);
-  };
-
   const showModalEdit = (value) => {
-    setUserSelected(value._id);
-    formEdit.setFieldsValue({
-      email: value.email,
-      name: value.name,
-      phone: value.phone,
-      location: value.location,
-      // city:value.city,
-
-      //address: value.address
-    });
+    setDeviceSelected(value._id);
     setOpenEdit(true);
   };
 
   const showModalDelete = (value) => {
+    console.log(value);
     setOpenDelete(true);
-    setUserDeleteSelected(value._id);
+    setDeviceDeleteSelected(value._id);
   };
 
-  const handleCancel = () => {
-    setOpenDelete(false);
-    setUserDeleteSelected(null);
+  const loadData = async () => {
+    setLoading(true);
+
+    const getUser = customerApi.getCustomerById("/user", {
+      id: user.id,
+    });
+    const getDeviceList = deviceApi.getAll("/device/listDevice", {
+      userId: user.id,
+    });
+    Promise.all([getUser, getDeviceList])
+      .then((res) => {
+        setCustomer(res[0].data.user);
+        setListDevice(res[1].data.devices);
+        setLisErrDevice(
+          res[1].data.devices.filter((item) => item.status === false)
+        );
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+    setLoading(false);
+  };
+
+  const hideModalCreateReport = () => {
+    formReport.resetFields();
+    setOpenCreateReport(false);
+  };
+
+  const onFinishReport = (values) => {
+    const final = {
+      ...values,
+      customerId: customer?._id,
+      userId: user.id,
+      nameUser: customer?.supporterName,
+    };
+
+    const onSubmitForm = async () => {
+      await instance
+        .post("report/create", final)
+        .then((res) => {
+          message.success({ content: " Tạo thành công" });
+          hideModalCreateReport();
+        })
+        .catch((err) => {
+          message.error({ content: "Error" });
+          hideModalCreateReport();
+          message.error({
+            content: err,
+          });
+        });
+    };
+    onSubmitForm();
+  };
+
+  const hideModalEdit = () => {
+    formEdit.resetFields();
+    setOpenEdit(false);
   };
 
   const onFinishEdit = (values) => {
     const final = {
       ...values,
-      role: "customer",
+      statusRequest: values.statusRequest == "action" ? true : false,
     };
-    console.log(values);
     const onSubmitForm = async () => {
       await instance
-        .patch(`user/update/${userSelected}`, final)
+        .patch(`device/update/${deviceSelected}`, final)
         .then((res) => {
           message.success({ content: " Thành công" });
           loadData();
@@ -212,60 +299,50 @@ const Dashboard = () => {
         });
     };
     onSubmitForm();
+    formEdit.resetFields();
     hideModalEdit();
+  };
+
+  const handleChange = (value) => {
+    console.log(`selected ${value}`);
+  };
+
+  const hideModalCreate = () => {
+    form.resetFields();
+    setOpenCreate(false);
   };
 
   const onFinish = (values) => {
     const final = {
       ...values,
-      city: city,
-      district: district,
-      ward: ward,
-      role: 'customer'
-    }
-    console.log(final)
+      deviceOwner: customer?.email,
+      userId: customer?._id,
+      statusRequest: false,
+    };
+    console.log(final);
     const onSubmitForm = async () => {
       await instance
-        .post('auth/register', final)
+        .post("device/create", final)
         .then((res) => {
-          message.success({ content: ' Thêm thành công' });
-          form.resetFields();
+          message.success({ content: " Thêm thành công" });
           hideModalCreate();
           loadData();
         })
         .catch((err) => {
+          message.error({ content: "Error" });
           hideModalCreate();
-          message.error({
-            content: err,
-          });
+          // message.error({
+          //   content: err,
+          // });
         });
-    }
+    };
     onSubmitForm();
-  }
-
-  const loadData = async () => {
-    setLoading(true);
-    await instance
-      .get("/user/userList")
-      .then((res) => {
-        setListUser(res.data.users);
-      })
-      .catch((err) => {
-        message.error({
-          content: err,
-        });
-      });
-    setLoading(false);
   };
-  useEffect(() => {
-    loadData();
-  }, []);
 
   const handleOkDelete = async () => {
     setConfirmLoading(true);
-
     await instance
-      .get(`user/delete/${userDeleteSelected}`)
+      .get(`device/delete/${deviceDeleteSelected}`)
       .then((res) => {
         setOpenDelete(false);
         loadData();
@@ -276,50 +353,20 @@ const Dashboard = () => {
           content: err,
         });
       });
-
   };
 
-  //address
-  const [city, setCity] = useState();
-  const [district, setDistrict] = useState([]);
-  const [ward, setWard] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [wards, setWards] = useState([]);
-
-  useEffect(() => {
-    const url = "https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json";
-    axios.get(url)
-      .then((response) => {
-        setCities(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, []);
-
-  const handleCityChange = (event) => {
-    const selectedCity = cities.find(city => city.Id === event);
-    setDistricts(selectedCity?.Districts);
-    setCity(selectedCity.Name);
-    console.log(city)
-    setWards([]);
-  };
-
-  const handleDistrictChange = (event) => {
-    const selectedDistrict = districts.find(district => district.Id === event);
-    setDistrict(selectedDistrict.Name);
-    setWards(selectedDistrict?.Wards);
-  };
-
-  const handleWardChange = (event) => {
-    const selectedWard = wards.find(ward => ward.Id === event);
-    setWard(selectedWard.Name);
+  const handleCancel = () => {
+    setOpenDelete(false);
+    setDeviceDeleteSelected(null);
   };
 
   return (
     <div>
       <h2 className="page-header">Dashboard</h2>
+      <div>
+        <h1>MQTT Data:</h1>
+        <p>{mqttData}</p>
+      </div>
       <div className="row justify-center">
         <div className="col-8">
           <div className="row">
@@ -354,7 +401,7 @@ const Dashboard = () => {
             <div className="card__body">
               <Table
                 columns={columns}
-                dataSource={listUser}
+                dataSource={listDevice}
                 rowKey={(record) => record._id}
               />
             </div>
@@ -379,7 +426,53 @@ const Dashboard = () => {
       </div>
 
       <Modal
-        title="Cập nhật thông tin vị trí"
+        title="Tạo báo cáo "
+        open={openCreateReport}
+        onOk={formReport.submit}
+        onCancel={hideModalCreateReport}
+        okText="OK"
+        cancelText="Cancel"
+      >
+        <Form
+          name="basic"
+          form={formReport}
+          labelCol={{ span: 8 }}
+          wrapperCol={{ span: 16 }}
+          style={{ maxWidth: 600 }}
+          initialValues={{ remember: true }}
+          onFinish={onFinishReport}
+          //   onFinishFailed={onFinishFailed}
+          autoComplete="off"
+        >
+          <Form.Item label="Khách hàng" name="customerName">
+            <Input disabled />
+          </Form.Item>
+          <Form.Item
+            label="Tiêu đề"
+            name="title"
+            rules={[{ required: true, message: "Vui lòng nhập Tiêu đề !" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Nội dung"
+            name="content"
+            rules={[{ required: true, message: "Vui lòng nhập Nội dung !" }]}
+          >
+            <TextArea rows={4} />
+          </Form.Item>
+          <Form.Item
+            label="Đơn giá"
+            name="bill"
+            rules={[{ required: true, message: "Vui lòng nhập Đơn giá !" }]}
+          >
+            <Input />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="Cập nhật thiết bị"
         open={openEdit}
         onOk={formEdit.submit}
         onCancel={hideModalEdit}
@@ -397,55 +490,35 @@ const Dashboard = () => {
           //   onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
-          <Form.Item label="Customer" name="customer">
+          <Form.Item
+            label="Mô tả"
+            name="description"
+            rules={[{ required: true }]}
+          >
             <Input />
           </Form.Item>
-          <Form.Item label="Mac address" name="macAddress">
+          <Form.Item label="Ghi chú" name="note" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          {/* <Form.Item label="Số điện thoại" name="phone">
-            <Input />
-          </Form.Item> */}
-          {/* <Form.Item label="Địa chỉ" name="address">
-            <Input />
-          </Form.Item> */}
-          {/* 
-          <Form.Item label="Tỉnh thành" name="city">
+          <Form.Item
+            label="Trạng thái"
+            name="statusRequest"
+            rules={[{ required: true }]}
+          >
             <Select
-              placeholder="Select"
-              onChange={handleCityChange}
-              allowClear
-            >        
-              {cities.map(city => <Option key={city.Id} value={city.Id}>{city.Name}</Option>)}
-            </Select>
-          </Form.Item>
-          <Form.Item label="Quận huyện" name="district">
-            <Select
-              style={{ marginRight: "55px" }}
-              placeholder="Select"
-              onChange={handleDistrictChange}
-            >           
-              {districts.map(district => <Option key={district.Id} value={district.Id}>{district.Name}</Option>)}
-            </Select>
-          </Form.Item>
-          <Form.Item label="Phường xã" name="ward">
-            <Select
-              style={{ marginRight: "55px" }}
-              placeholder="Select"
-              onChange={handleWardChange}
-            >
-              {wards.map(ward => <Option key={ward.Id} value={ward.Id}>{ward.Name}</Option>)}
-            </Select>
-          </Form.Item> */}
-
-          <Form.Item label="Location" name="location">
-            <Input />
+              style={{ width: "100%" }}
+              onChange={handleChange}
+              options={[
+                { value: "action", label: "Hoạt động" },
+                // { value: "error", label: "Yêu cầu sửa" },
+              ]}
+            />
           </Form.Item>
         </Form>
       </Modal>
 
       <Modal
-        title="Add New Location"
+        title="Thêm mới thiết bị"
         open={openCreate}
         onOk={form.submit}
         onCancel={hideModalCreate}
@@ -463,95 +536,55 @@ const Dashboard = () => {
           //   onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
-          {/* <Form.Item
-            label="Location"
-            name="location"
-            rules={[{ required: true, message: "Vui lòng nhập Location!" }]}
-          >
-            <Input />
-          </Form.Item> */}
           <Form.Item
-            label="Customer"
-            name="customer"
-            rules={[{ required: true, message: "Vui lòng nhập Customer!" }]}
+            label="Tên thiết bị"
+            name="name"
+            rules={[{ required: true, message: "Vui lòng nhập Tên thiết bị!" }]}
           >
             <Input />
           </Form.Item>
-          <Form.Item
-            label="Mac address"
-            name="macAddress"
-            rules={[{ required: true, message: "Vui lòng nhập Mac address!" }]}
-          >
-            <Input />
-          </Form.Item>
-          {/* <Form.Item
-            label="Số điện thoại"
-            name="phone"
-            rules={[
-              { required: true, message: "Vui lòng nhập Số điện thoại!" },
-            ]}
-          >
-            <Input />
-          </Form.Item> */}
-          {/* <Form.Item label="Địa chỉ" name="address">
-            <Input />
+          {/* <Form.Item label="Chủ thiết bị" name="owner">
+            <Select
+              style={{ width: "100%" }}
+              onChange={handleChange}
+              options={[
+                { value: "succes", label: "Hoạt động" },
+                { value: "error", label: "Yêu cầu sửa" },
+              ]}
+            />
           </Form.Item> */}
           <Form.Item
-            label="Tỉnh thành"
-            name="cityId"
-            rules={[{ required: true, message: "Vui lòng chọn Tỉnh thành!" }]}
-          >
-            <Select placeholder="Select" onChange={handleCityChange} allowClear>
-              {/* <Option value="">Chọn tỉnh thành</Option> */}
-              {cities.map((city) => (
-                <Option key={city.Id} value={city.Id}>
-                  {city.Name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item
-            label="Quận huyện"
-            name="districtId"
-            rules={[{ required: true, message: "Vui lòng chọn Quận huyện!" }]}
+            label="Phòng"
+            name="room"
+            rules={[{ required: true, message: "Vui lòng nhập Phòng!" }]}
           >
             <Select
-              style={{ marginRight: "55px" }}
-              placeholder="Select"
-              onChange={handleDistrictChange}
-            >
-              {/* <Option value="">Chọn quận huyện</Option> */}
-              {districts.map((district) => (
-                <Option key={district.Id} value={district.Id}>
-                  {district.Name}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item
-            label="Phường xã"
-            name="wardId"
-            rules={[{ required: true, message: "Vui lòng chọn Phường xã!" }]}
-          >
-            <Select
-              style={{ marginRight: "55px" }}
-              placeholder="Select"
-              onChange={handleWardChange}
-            >
-              {/* <Option value="">Chọn phường xã</Option> */}
-              {wards.map((ward) => (
-                <Option key={ward.Id} value={ward.Id}>
-                  {ward.Name}
-                </Option>
-              ))}
-            </Select>
+              style={{ width: "100%" }}
+              onChange={handleChange}
+              options={[
+                { value: "living-room", label: "Phòng khách" },
+                { value: "kitchen", label: "Phòng bếp" },
+                { value: "bathroom", label: "Phòng tắm" },
+                { value: "bedroom", label: "Phòng ngủ" },
+              ]}
+            />
           </Form.Item>
 
           <Form.Item
-            label="Ví trí"
-            name="location"
-            rules={[{ required: true, message: "Vui lòng chọn Vị trí!" }]}
+            label="Mô tả"
+            name="description"
+            rules={[{ required: true, message: "Vui lòng nhập Mô tả!" }]}
           >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label="Ngày lắp đặt"
+            name="installationDate"
+            rules={[{ required: true, message: "Vui lòng nhập Ngày lắp đặt!" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item label="Ghi chú" name="note">
             <Input />
           </Form.Item>
         </Form>
@@ -564,7 +597,7 @@ const Dashboard = () => {
         confirmLoading={confirmLoading}
         onCancel={handleCancel}
       >
-        <p> Xóa vị trí này?</p>
+        <p> Xóa thiết bị này?</p>
       </Modal>
     </div>
   );

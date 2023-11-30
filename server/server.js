@@ -62,6 +62,8 @@ db.once("open", () => {
         humidityAir: content.humidityAir,
         temperature: content.temperature,
         gasVal: content.gasVal,
+        p25: content.p25,
+        p10: content.p10,
       });
 
       const savedSensor = await sensor.save();
