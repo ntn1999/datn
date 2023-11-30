@@ -49,8 +49,8 @@ const Dashboard = () => {
     },
     {
       title: "Humidity",
-      dataIndex: "humidity",
-      key: "humidity",
+      dataIndex: "humidityAir",
+      key: "humidityAir",
     },
     {
       title: "Temperature",
@@ -59,13 +59,13 @@ const Dashboard = () => {
     },
     {
       title: "PM 2.5",
-      key: "pm25",
-      dataIndex: "pm25",
+      key: "p25",
+      dataIndex: "p25",
     },
     {
       title: "PM 10",
-      key: "pm10",
-      dataIndex: "pm10",
+      key: "p10",
+      dataIndex: "p10",
     },
     {
       title: "AQI",
@@ -75,7 +75,7 @@ const Dashboard = () => {
     {
       title: "Mac Address",
       key: "macaddress",
-      dataIndex: "macaddress",
+      dataIndex: "description",
     },
     {
       title: "Status",
@@ -121,12 +121,12 @@ const Dashboard = () => {
   const [mqttData, setMqttData] = useState("");
   const [confirmLoading, setConfirmLoading] = useState(false);
   const history = useHistory();
-  const [city, setCity] = useState();
-  const [district, setDistrict] = useState([]);
-  const [ward, setWard] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [wards, setWards] = useState([]);
+  // const [city, setCity] = useState();
+  // const [district, setDistrict] = useState([]);
+  // const [ward, setWard] = useState([]);
+  // const [cities, setCities] = useState([]);
+  // const [districts, setDistricts] = useState([]);
+  // const [wards, setWards] = useState([]);
 
   const [openCreateReport, setOpenCreateReport] = useState(false);
   const [formReport] = Form.useForm();
@@ -136,11 +136,10 @@ const Dashboard = () => {
 
   useEffect(() => {
     connectMqtt();
-    getListLocation();
+    // getListLocation();
     getApi();
     loadData();
     const user = JSON.parse(localStorage.getItem("user"));
-    console.log(user, "ssssssss");
     if (user.role !== "admin") {
       history.push("/requests");
     }
@@ -156,7 +155,9 @@ const Dashboard = () => {
 
     // Khi nhận được dữ liệu từ MQTT broker
     client.on("message", (topic, message) => {
-      setMqttData(message.toString());
+      if (message.toString() !== "aaaa") {
+        setMqttData(message.toString());
+      }
     });
 
     return () => {
@@ -164,18 +165,18 @@ const Dashboard = () => {
     };
   };
 
-  const getListLocation = () => {
-    const url =
-      "https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json";
-    axios
-      .get(url)
-      .then((response) => {
-        setCities(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
+  // const getListLocation = () => {
+  //   const url =
+  //     "https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json";
+  //   axios
+  //     .get(url)
+  //     .then((response) => {
+  //       setCities(response.data);
+  //     })
+  //     .catch((error) => {
+  //       console.log(error);
+  //     });
+  // };
 
   const getApi = () => {
     let mounted = true;
@@ -205,7 +206,6 @@ const Dashboard = () => {
   };
 
   const showModalCreate = () => {
-    console.log("showModalCreate");
     setOpenCreate(true);
   };
 
@@ -215,7 +215,6 @@ const Dashboard = () => {
   };
 
   const showModalDelete = (value) => {
-    console.log(value);
     setOpenDelete(true);
     setDeviceDeleteSelected(value._id);
   };
@@ -319,7 +318,6 @@ const Dashboard = () => {
       userId: customer?._id,
       statusRequest: false,
     };
-    console.log(final);
     const onSubmitForm = async () => {
       await instance
         .post("device/create", final)
@@ -331,9 +329,6 @@ const Dashboard = () => {
         .catch((err) => {
           message.error({ content: "Error" });
           hideModalCreate();
-          // message.error({
-          //   content: err,
-          // });
         });
     };
     onSubmitForm();
@@ -360,13 +355,19 @@ const Dashboard = () => {
     setDeviceDeleteSelected(null);
   };
 
+  const mapDataMqtt = (listDevice, mqttData) => {
+    if (mqttData) {
+      const data = JSON.parse(mqttData);
+      listDevice[0] = { ...listDevice[0], ...data };
+      listDevice = [...listDevice];
+    }
+    return listDevice;
+  };
+
   return (
     <div>
       <h2 className="page-header">Dashboard</h2>
-      <div>
-        <h1>MQTT Data:</h1>
-        <p>{mqttData}</p>
-      </div>
+      <p>{mqttData}</p>
       <div className="row justify-center">
         <div className="col-8">
           <div className="row">
@@ -374,7 +375,7 @@ const Dashboard = () => {
               <StatusCard
                 icon="bx bx-user-pin"
                 count={listUser?.length}
-                title=" Sensors"
+                title=" Users"
               />
             </div>
             <div className="col-4">
@@ -401,13 +402,13 @@ const Dashboard = () => {
             <div className="card__body">
               <Table
                 columns={columns}
-                dataSource={listDevice}
+                dataSource={mapDataMqtt(listDevice, mqttData)}
                 rowKey={(record) => record._id}
               />
             </div>
           </div>
         </div>
-        <div className="col-8">
+        {/* <div className="col-8">
           <div className="row">
             <BarChart width={800} height={300} data={quantity}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -422,7 +423,7 @@ const Dashboard = () => {
               />
             </BarChart>
           </div>
-        </div>
+        </div> */}
       </div>
 
       <Modal
