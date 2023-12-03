@@ -68,7 +68,7 @@ const Label = (props) => {
 };
 
 const Location = () => {
-  // const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const defaultProps = {
     center: {
@@ -260,83 +260,104 @@ const Location = () => {
 
   return (
     <div>
-      <div>
-        <div className="row justify-between">
-          <div className="col-4">
-            <h2>Thông tin chi tiết điểm đo</h2>
+      <div className="row">
+        <div className="col-4">
+          <h4>Thông tin chi tiết điểm đo</h4>
+        </div>
+      </div>
+
+      <div className="row mb-5">
+        <div className="card col-6">
+          <div className="row">
+            <span style={{ marginLeft: "10px" }}>Tên: {user?.name}</span>
+          </div>
+          <div className="row">
+            <div style={{ marginLeft: "10px" }}>Email: {user?.email}</div>
+          </div>
+          <div className="row">
+            <div style={{ marginLeft: "10px" }}>
+              Số điện thoại: {user?.phone}
+            </div>
+          </div>
+          <div className="row">
+            <div style={{ marginLeft: "10px" }}>Vị trí: {user?.location}</div>
+          </div>
+          <div className="row">
+            <div style={{ marginLeft: "10px" }}>
+              Địa chỉ: {customer?.ward}, {customer?.district}, {customer?.city}
+            </div>
           </div>
         </div>
-
-        <div className="row">
-          <div className="card col-6">
-            <div className="row">
-              <div>Tên: </div>
-              <div style={{ marginLeft: "10px" }}>{customer?.name}</div>
-            </div>
-            <div className="row">
-              <div>Email: </div>
-              <div style={{ marginLeft: "10px" }}>{customer?.email}</div>
-            </div>
-            <div className="row">
-              <div>Số điện thoại: </div>
-              <div style={{ marginLeft: "10px" }}>{customer?.phone}</div>
-            </div>
-            <div className="row">
-              <div>Vị trí: </div>
-              <div style={{ marginLeft: "10px" }}>{customer?.location}</div>
-            </div>
-            <div className="row">
-              <div>Địa chỉ: </div>
-              <div style={{ marginLeft: "10px" }}>
-                {customer?.ward}, {customer?.district}, {customer?.city}
-              </div>
-            </div>
-          </div>
-          <div className="col-6">
-            <div style={{ height: "300px", width: "570px" }}>
-              <GoogleMapReact
-                bootstrapURLKeys={{
-                  key: "AIzaSyAMcAoFKRllxlboROQyrqLF68Sw6JyZrkk",
-                }}
-                defaultCenter={coords}
-                defaultZoom={11}
-                center={coords}
-              >
-                <AnyReactComponent
-                  lat={coords?.lat}
-                  lng={coords?.lng}
-                  icon={<TiLocation color="red" size={24} />}
-                  text="Cau Giay, Ha Noi"
-                />
-              </GoogleMapReact>
-            </div>
+        <div className="col-6">
+          <div style={{ height: "300px", width: "570px" }}>
+            <GoogleMapReact
+              bootstrapURLKeys={{
+                key: "AIzaSyAMcAoFKRllxlboROQyrqLF68Sw6JyZrkk",
+              }}
+              defaultCenter={coords}
+              defaultZoom={11}
+              center={coords}
+            >
+              <AnyReactComponent
+                lat={coords?.lat}
+                lng={coords?.lng}
+                icon={<TiLocation color="red" size={24} />}
+                text="Cau Giay, Ha Noi"
+              />
+            </GoogleMapReact>
           </div>
         </div>
       </div>
-      <div className="row">
-        <div className="col-12">
+
+      <div className="row mb-5">
+        <div className="col-3 d-flex justify-content-center">
           <img
             src={temperature}
             alt="company logo"
-            style={{ width: "50px", height: "50px" }}
+            style={{ width: "70px", height: "70px" }}
           />
-          <span>{mqttData.temperature}</span>
+          <div style={{ margin: "12px" }}>
+            <h6>Temperature</h6>
+            <span className="fw-bold">{mqttData.temperature}&#8451;</span>
+          </div>
+        </div>
+        <div className="col-3 d-flex justify-content-center">
           <img
             src={humidity}
             alt="company logo"
-            style={{ width: "50px", height: "50px" }}
+            style={{ width: "70px", height: "70px" }}
           />
-          <span>{mqttData.humidityAir}</span>
+          <div style={{ margin: "12px" }}>
+            <h6>Humidity</h6>
+            <span className="fw-bold">{mqttData.humidityAir}%</span>
+          </div>
+        </div>
+        <div className="col-3 d-flex justify-content-center">
           <img
             src={co2}
             alt="company logo"
-            style={{ width: "50px", height: "50px" }}
+            style={{ width: "70px", height: "70px" }}
           />
+          <div style={{ margin: "12px" }}>
+            <h6>CO2</h6>
+            <span className="fw-bold">{mqttData.humidityAir}ppm</span>
+          </div>
+        </div>
+        <div className="col-3 d-flex justify-content-center">
           <img
             src={co}
             alt="company logo"
-            style={{ width: "50px", height: "50px" }}
+            style={{ width: "70px", height: "70px" }}
           />
+          <div style={{ margin: "12px" }}>
+            <h6>CO</h6>
+            <span className="fw-bold">{mqttData.humidityAir}ppm</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-4 d-flex justify-content-center">
           <ReactSpeedometer
             maxValue={100}
             value={27}
@@ -346,6 +367,8 @@ const Location = () => {
             currentValueText={"AQI: ${value} AQI"}
             textColor={"black"}
           />
+        </div>
+        <div className="col-4 d-flex justify-content-center">
           <ReactSpeedometer
             maxValue={100}
             value={mqttData.p25}
@@ -355,6 +378,8 @@ const Location = () => {
             currentValueText={"PM2.5: ${value}"}
             textColor={"black"}
           />
+        </div>
+        <div className="col-4 d-flex justify-content-center">
           <ReactSpeedometer
             maxValue={100}
             value={mqttData.p10}
@@ -364,8 +389,13 @@ const Location = () => {
             currentValueText={"PM10: ${value}"}
             textColor={"black"}
           />
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-6">
           <LineChart
-            width={800}
+            width={580}
             height={400}
             data={dataSensor}
             margin={{
@@ -388,7 +418,9 @@ const Location = () => {
             />
             <Line type="monotone" dataKey="temperature" stroke="#82ca9d" />
           </LineChart>
-          <BarChart width={800} height={300} data={dataSensor}>
+        </div>
+        <div className="col-6">
+          <BarChart width={565} height={400} data={dataSensor}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
             <YAxis />
@@ -400,14 +432,17 @@ const Location = () => {
               name="Số lượng khách hàng đăng ký "
             />
           </BarChart>
-          <div className="card">
-            <div className="card__body">
-              <Table
-                columns={columns}
-                dataSource={listDevice}
-                rowKey={(record) => record._id}
-              />
-            </div>
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="card col-12">
+          <div className="card__body">
+            <Table
+              columns={columns}
+              dataSource={listDevice}
+              rowKey={(record) => record._id}
+            />
           </div>
         </div>
       </div>

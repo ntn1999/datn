@@ -384,13 +384,15 @@ const Dashboard = () => {
                 title=" Locations"
               />
             </div>
-            <Button
-              type="primary"
-              onClick={showModalCreate}
-              className="new-location"
-            >
-              New Location
-            </Button>
+            <div className="col-4">
+              <Button
+                type="primary"
+                onClick={showModalCreate}
+                className="new-location"
+              >
+                New Location
+              </Button>
+            </div>
           </div>
         </div>
         <div className="col-12">
