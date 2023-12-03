@@ -1,9 +1,9 @@
 .topnav {
-    padding: 30px;
+    /* padding: 30px; */
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: var(--topnav-height);
+    /* height: var(--topnav-height); */
 }
 
 .topnav__search {
@@ -45,7 +45,7 @@
 .notification-item {
     display: flex;
     align-items: center;
-    padding: 20px;
+    /* padding: 20px; */
 }
 
 .notification-item:hover {

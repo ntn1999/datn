@@ -18,7 +18,6 @@ import {
   Tag,
   Table,
 } from "antd";
-
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import customerApi from "../service/customerService";
 import deviceApi from "../service/deviceService";
@@ -37,7 +36,9 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-
+import sensorApi from "../service/sensorService";
+import moment from "moment";
+import mqtt from "mqtt";
 const { TextArea } = Input;
 
 const AnyReactComponent = ({ text, icon }) => (
@@ -67,62 +68,7 @@ const Label = (props) => {
 };
 
 const Location = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
-
-  const data = [
-    {
-      name: "Page A",
-      uv: 4000,
-      pv: 2400,
-      amt: 2400,
-    },
-    {
-      name: "Page B",
-      uv: 3000,
-      pv: 1398,
-      amt: 2210,
-    },
-    {
-      name: "Page C",
-      uv: 2000,
-      pv: 9800,
-      amt: 2290,
-    },
-    {
-      name: "Page D",
-      uv: 2780,
-      pv: 3908,
-      amt: 2000,
-    },
-    {
-      name: "Page E",
-      uv: 1890,
-      pv: 4800,
-      amt: 2181,
-    },
-    {
-      name: "Page F",
-      uv: 2390,
-      pv: 3800,
-      amt: 2500,
-    },
-    {
-      name: "Page G",
-      uv: 3490,
-      pv: 4300,
-      amt: 2100,
-    },
-  ];
-
-  const chartData = [
-    { x: 5, y: 1508 },
-    { x: 6, y: 107 },
-    { x: 7, y: 325 },
-    { x: 8, y: 439 },
-    { x: 9, y: 982 },
-    { x: 10, y: 1562 },
-    { x: 11, y: 50 },
-  ];
+  // const user = JSON.parse(localStorage.getItem("user"));
 
   const defaultProps = {
     center: {
@@ -178,54 +124,48 @@ const Location = () => {
           </Tag>
         ),
     },
-
-    {
-      title: "Action",
-      key: "action",
-      render: (_, record) => (
-        <Row>
-          <Col>
-            <Button
-              type="link"
-              icon={<EditOutlined />}
-              onClick={() => showModalEdit(record)}
-            />
-          </Col>
-          <Col>
-            <Button
-              type="link"
-              icon={<DeleteOutlined />}
-              onClick={() => showModalDelete(record)}
-            />
-          </Col>
-        </Row>
-      ),
-    },
   ];
 
   const params = useParams();
-  const [openEdit, setOpenEdit] = useState(false);
-  const [openCreate, setOpenCreate] = useState(false);
-  const [openCreateReport, setOpenCreateReport] = useState(false);
   const [loading, setLoading] = useState(true);
   const [customer, setCustomer] = useState();
   const [listDevice, setListDevice] = useState([]);
   const [listErrDevice, setLisErrDevice] = useState();
-  const [deviceSelected, setDeviceSelected] = useState();
-  const [form] = Form.useForm();
-  const [formEdit] = Form.useForm();
-  const [formReport] = Form.useForm();
-
-  const [openDelete, setOpenDelete] = useState(false);
-  const [confirmLoading, setConfirmLoading] = useState(false);
-  const [deviceDeleteSelected, setDeviceDeleteSelected] = useState(null);
-
   const [listening, setListening] = useState(false);
   const [cpuUsage, setcpuUsage] = useState(0);
   const [memoryUsage, setmemoryUsage] = useState(0);
+  const [dataSensor, setDataSensor] = useState([]);
   const [coords, setCoords] = useState(null);
+  const [mqttData, setMqttData] = useState("");
 
   useEffect(() => {
+    connectMqtt();
+    getLocaion();
+    getDataSensor();
+  }, []);
+
+  const connectMqtt = () => {
+    const client = mqtt.connect("wss://broker.hivemq.com:8884/mqtt");
+    client.on("connect", () => {
+      console.log("Connected to MQTT broker");
+      // Đăng ký để nhận dữ liệu từ topic 'demo1'
+      client.subscribe("demo1");
+    });
+
+    // Khi nhận được dữ liệu từ MQTT broker
+    client.on("message", (topic, message) => {
+      if (message.toString() !== "aaaa") {
+        const data = JSON.parse(message.toString());
+        setMqttData(data);
+      }
+    });
+
+    return () => {
+      client.end();
+    };
+  };
+
+  const getLocaion = () => {
     // navigator.geolocation.getCurrentPosition(
     //   ({ coords: { longitude, latitude } }) => {
     //     setCoords({ lat: latitude, lng: longitude });
@@ -239,9 +179,38 @@ const Location = () => {
     setTimeout(() => {
       getCoords();
     }, 2000);
-  });
+  };
 
-  let eventSource = undefined;
+  const getDataSensor = () => {
+    const endTime = moment().valueOf();
+    const startTime = moment().subtract(1, "months").valueOf();
+
+    sensorApi
+      .getData(`/sensor?begin=${startTime}&end=${endTime}`)
+      .then((res) => {
+        res.data.result.forEach((item) => {
+          item.humidityAir = item.humidityAir.toFixed(2);
+          item.temperature = item.temperature.toFixed(2);
+          item.gasVal = item.gasVal.toFixed(2);
+          if (item.humidityAir === "0.00") {
+            item.humidityAir = 45;
+          }
+          if (item.temperature === "0.00") {
+            item.temperature = 25;
+          }
+          item.name = moment(item.time).format("DD/MM");
+        });
+        if (res.data.result.length) {
+          console.log(res.data.result);
+          setDataSensor(res.data.result);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  // let eventSource = undefined;
 
   // useEffect(() => {
   //   if (!listening) {
@@ -265,237 +234,109 @@ const Location = () => {
   //   };
   // }, []);
 
-  const showModalDelete = (value) => {
-    setOpenDelete(true);
-    setDeviceDeleteSelected(value._id);
-  };
+  // const loadData = async () => {
+  //   setLoading(true);
 
-  const handleOkDelete = async () => {
-    setConfirmLoading(true);
-    await instance
-      .get(`device/delete/${deviceDeleteSelected}`)
-      .then((res) => {
-        setOpenDelete(false);
-        loadData();
-        setConfirmLoading(false);
-      })
-      .catch((err) => {
-        message.error({
-          content: err,
-        });
-      });
-  };
-  const handleCancel = () => {
-    setOpenDelete(false);
-    setDeviceDeleteSelected(null);
-  };
+  //   const getUser = customerApi.getCustomerById("/user", {
+  //     id: params.id,
+  //   });
+  //   const getDeviceList = deviceApi.getAll("/device/listDevice", {
+  //     userId: params.id,
+  //   });
+  //   Promise.all([getUser, getDeviceList])
+  //     .then((res) => {
+  //       setCustomer(res[0].data.user);
+  //       setListDevice(res[1].data.devices);
+  //       setLisErrDevice(
+  //         res[1].data.devices.filter((item) => item.status === false)
+  //       );
+  //     })
+  //     .catch((err) => {
+  //       console.log(err);
+  //     });
 
-  const loadData = async () => {
-    setLoading(true);
+  //   setLoading(false);
+  // };
 
-    const getUser = customerApi.getCustomerById("/user", {
-      id: params.id,
-    });
-    const getDeviceList = deviceApi.getAll("/device/listDevice", {
-      userId: params.id,
-    });
-    Promise.all([getUser, getDeviceList])
-      .then((res) => {
-        setCustomer(res[0].data.user);
-        setListDevice(res[1].data.devices);
-        setLisErrDevice(
-          res[1].data.devices.filter((item) => item.status === false)
-        );
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const onFinishReport = (values) => {
-    const final = {
-      ...values,
-      customerId: customer?._id,
-      userId: user.id,
-      nameUser: customer?.supporterName,
-    };
-
-    const onSubmitForm = async () => {
-      await instance
-        .post("report/create", final)
-        .then((res) => {
-          message.success({ content: " Tạo thành công" });
-          hideModalCreateReport();
-        })
-        .catch((err) => {
-          message.error({ content: "Error" });
-          hideModalCreateReport();
-          message.error({
-            content: err,
-          });
-        });
-    };
-    onSubmitForm();
-  };
-
-  const onFinish = (values) => {
-    const final = {
-      ...values,
-      deviceOwner: customer?.email,
-      userId: customer?._id,
-      statusRequest: false,
-    };
-    console.log(final);
-    const onSubmitForm = async () => {
-      await instance
-        .post("device/create", final)
-        .then((res) => {
-          message.success({ content: " Thêm thành công" });
-          hideModalCreate();
-          loadData();
-        })
-        .catch((err) => {
-          message.error({ content: "Error" });
-          hideModalCreate();
-          // message.error({
-          //   content: err,
-          // });
-        });
-    };
-    onSubmitForm();
-  };
-
-  const onFinishEdit = (values) => {
-    const final = {
-      ...values,
-      statusRequest: values.statusRequest == "action" ? true : false,
-    };
-    const onSubmitForm = async () => {
-      await instance
-        .patch(`device/update/${deviceSelected}`, final)
-        .then((res) => {
-          message.success({ content: " Thành công" });
-          loadData();
-        })
-        .catch((err) => {
-          message.error({
-            content: err,
-          });
-        });
-    };
-    onSubmitForm();
-    formEdit.resetFields();
-    hideModalEdit();
-  };
-
-  const showModalEdit = (value) => {
-    setDeviceSelected(value._id);
-    setOpenEdit(true);
-  };
-
-  const hideModalEdit = () => {
-    formEdit.resetFields();
-    setOpenEdit(false);
-  };
-
-  const showModalCreate = () => {
-    setOpenCreate(true);
-  };
-
-  const hideModalCreate = () => {
-    form.resetFields();
-    setOpenCreate(false);
-  };
-
-  const showModalCreateReport = () => {
-    formReport.setFieldsValue({
-      customerName: customer?.name,
-    });
-    setOpenCreateReport(true);
-  };
-
-  const hideModalCreateReport = () => {
-    formReport.resetFields();
-    setOpenCreateReport(false);
-  };
-
-  const handleChange = (value) => {
-    console.log(`selected ${value}`);
-  };
   return (
     <div>
       <div>
         <div className="row justify-between">
-          <div className="col-3">
-            <h2>Thông tin khách hàng</h2>
-          </div>
-          <div className="col-3">
-            {user.role !== "admin" ? (
-              <div style={{ paddingRight: "55px" }} className="row justify-end">
-                <Button type="primary" onClick={showModalCreateReport}>
-                  Tạo báo cáo
-                </Button>
-              </div>
-            ) : (
-              <></>
-            )}
+          <div className="col-4">
+            <h2>Thông tin chi tiết điểm đo</h2>
           </div>
         </div>
 
-        <div className="card">
-          <div className="row">
-            <div>Tên: </div>
-            <div style={{ marginLeft: "10px" }}>{customer?.name}</div>
-          </div>
-          <div className="row">
-            <div>Email: </div>
-            <div style={{ marginLeft: "10px" }}>{customer?.email}</div>
-          </div>
-          <div className="row">
-            <div>Số điện thoại: </div>
-            <div style={{ marginLeft: "10px" }}>{customer?.phone}</div>
-          </div>
-          <div className="row">
-            <div>Vị trí: </div>
-            <div style={{ marginLeft: "10px" }}>{customer?.location}</div>
-          </div>
-          <div className="row">
-            <div>Địa chỉ: </div>
-            <div style={{ marginLeft: "10px" }}>
-              {customer?.ward}, {customer?.district}, {customer?.city}
+        <div className="row">
+          <div className="card col-6">
+            <div className="row">
+              <div>Tên: </div>
+              <div style={{ marginLeft: "10px" }}>{customer?.name}</div>
+            </div>
+            <div className="row">
+              <div>Email: </div>
+              <div style={{ marginLeft: "10px" }}>{customer?.email}</div>
+            </div>
+            <div className="row">
+              <div>Số điện thoại: </div>
+              <div style={{ marginLeft: "10px" }}>{customer?.phone}</div>
+            </div>
+            <div className="row">
+              <div>Vị trí: </div>
+              <div style={{ marginLeft: "10px" }}>{customer?.location}</div>
+            </div>
+            <div className="row">
+              <div>Địa chỉ: </div>
+              <div style={{ marginLeft: "10px" }}>
+                {customer?.ward}, {customer?.district}, {customer?.city}
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-      <div className="row justify-between">
-        <div className="col-3">
-          <h2 className="page-header">Danh sách thiết bị </h2>
-        </div>
-        <div className="col-3">
-          <div style={{ paddingRight: "55px" }} className="row justify-end">
-            <Button type="primary" onClick={showModalCreate}>
-              + Thêm mới thiết bị
-            </Button>
+          <div className="col-6">
+            <div style={{ height: "300px", width: "570px" }}>
+              <GoogleMapReact
+                bootstrapURLKeys={{
+                  key: "AIzaSyAMcAoFKRllxlboROQyrqLF68Sw6JyZrkk",
+                }}
+                defaultCenter={coords}
+                defaultZoom={11}
+                center={coords}
+              >
+                <AnyReactComponent
+                  lat={coords?.lat}
+                  lng={coords?.lng}
+                  icon={<TiLocation color="red" size={24} />}
+                  text="Cau Giay, Ha Noi"
+                />
+              </GoogleMapReact>
+            </div>
           </div>
         </div>
       </div>
       <div className="row">
         <div className="col-12">
-          <div className="card">
-            <div className="card__body">
-              <Table
-                columns={columns}
-                dataSource={listDevice}
-                rowKey={(record) => record._id}
-              />
-            </div>
-          </div>
+          <img
+            src={temperature}
+            alt="company logo"
+            style={{ width: "50px", height: "50px" }}
+          />
+          <span>{mqttData.temperature}</span>
+          <img
+            src={humidity}
+            alt="company logo"
+            style={{ width: "50px", height: "50px" }}
+          />
+          <span>{mqttData.humidityAir}</span>
+          <img
+            src={co2}
+            alt="company logo"
+            style={{ width: "50px", height: "50px" }}
+          />
+          <img
+            src={co}
+            alt="company logo"
+            style={{ width: "50px", height: "50px" }}
+          />
           <ReactSpeedometer
             maxValue={100}
             value={27}
@@ -507,7 +348,7 @@ const Location = () => {
           />
           <ReactSpeedometer
             maxValue={100}
-            value={27}
+            value={mqttData.p25}
             valueFormat={"d"}
             customSegmentStops={[0, 25, 50, 75, 100]}
             segmentColors={["#a3be8c", "#ebcb8b", "#d08770", "#bf616a"]}
@@ -516,54 +357,17 @@ const Location = () => {
           />
           <ReactSpeedometer
             maxValue={100}
-            value={27}
+            value={mqttData.p10}
             valueFormat={"d"}
             customSegmentStops={[0, 25, 50, 75, 100]}
             segmentColors={["#a3be8c", "#ebcb8b", "#d08770", "#bf616a"]}
             currentValueText={"PM10: ${value}"}
             textColor={"black"}
           />
-          <img
-            src={temperature}
-            alt="company logo"
-            style={{ width: "50px", height: "50px" }}
-          />
-          <img
-            src={humidity}
-            alt="company logo"
-            style={{ width: "50px", height: "50px" }}
-          />
-          <img
-            src={co2}
-            alt="company logo"
-            style={{ width: "50px", height: "50px" }}
-          />
-          <img
-            src={co}
-            alt="company logo"
-            style={{ width: "50px", height: "50px" }}
-          />
-          <div style={{ height: "300px", width: "500px" }}>
-            <GoogleMapReact
-              bootstrapURLKeys={{
-                key: "AIzaSyAMcAoFKRllxlboROQyrqLF68Sw6JyZrkk",
-              }}
-              defaultCenter={coords}
-              defaultZoom={11}
-              center={coords}
-            >
-              <AnyReactComponent
-                lat={coords?.lat}
-                lng={coords?.lng}
-                icon={<TiLocation color="red" size={24} />}
-                text="Cau Giay, Ha Noi"
-              />
-            </GoogleMapReact>
-          </div>
           <LineChart
-            width={500}
-            height={300}
-            data={data}
+            width={800}
+            height={400}
+            data={dataSensor}
             margin={{
               top: 5,
               right: 30,
@@ -578,200 +382,35 @@ const Location = () => {
             <Legend />
             <Line
               type="monotone"
-              dataKey="pv"
+              dataKey="humidityAir"
               stroke="#8884d8"
               activeDot={{ r: 8 }}
             />
-            <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
+            <Line type="monotone" dataKey="temperature" stroke="#82ca9d" />
           </LineChart>
-          <BarChart width={730} height={250} data={chartData}>
+          <BarChart width={800} height={300} data={dataSensor}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              tick={{ fontSize: 8 }}
-              dataKey="x"
-              type="number"
-              domain={[4.5, 13.5]}
-              ticks={[5, 6, 7, 8, 9, 10, 11, 12, 13]}
-            />
+            <XAxis dataKey="name" />
             <YAxis />
-            <Bar dataKey="y" label={<Label />} fill="#8884d8" />
+            <Tooltip />
+            <Legend />
+            <Bar
+              dataKey="gasVal"
+              fill="#8884d8"
+              name="Số lượng khách hàng đăng ký "
+            />
           </BarChart>
+          <div className="card">
+            <div className="card__body">
+              <Table
+                columns={columns}
+                dataSource={listDevice}
+                rowKey={(record) => record._id}
+              />
+            </div>
+          </div>
         </div>
       </div>
-      <Modal
-        title="Tạo báo cáo "
-        open={openCreateReport}
-        onOk={formReport.submit}
-        onCancel={hideModalCreateReport}
-        okText="OK"
-        cancelText="Cancel"
-      >
-        <Form
-          name="basic"
-          form={formReport}
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 16 }}
-          style={{ maxWidth: 600 }}
-          initialValues={{ remember: true }}
-          onFinish={onFinishReport}
-          //   onFinishFailed={onFinishFailed}
-          autoComplete="off"
-        >
-          <Form.Item label="Khách hàng" name="customerName">
-            <Input disabled />
-          </Form.Item>
-          <Form.Item
-            label="Tiêu đề"
-            name="title"
-            rules={[{ required: true, message: "Vui lòng nhập Tiêu đề !" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Nội dung"
-            name="content"
-            rules={[{ required: true, message: "Vui lòng nhập Nội dung !" }]}
-          >
-            <TextArea rows={4} />
-          </Form.Item>
-          <Form.Item
-            label="Đơn giá"
-            name="bill"
-            rules={[{ required: true, message: "Vui lòng nhập Đơn giá !" }]}
-          >
-            <Input />
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      <Modal
-        title="Cập nhật thiết bị"
-        open={openEdit}
-        onOk={formEdit.submit}
-        onCancel={hideModalEdit}
-        okText="OK"
-        cancelText="Cancel"
-      >
-        <Form
-          name="basic"
-          form={formEdit}
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 16 }}
-          style={{ maxWidth: 600 }}
-          initialValues={{ remember: true }}
-          onFinish={onFinishEdit}
-          //   onFinishFailed={onFinishFailed}
-          autoComplete="off"
-        >
-          <Form.Item
-            label="Mô tả"
-            name="description"
-            rules={[{ required: true }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item label="Ghi chú" name="note" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Trạng thái"
-            name="statusRequest"
-            rules={[{ required: true }]}
-          >
-            <Select
-              style={{ width: "100%" }}
-              onChange={handleChange}
-              options={[
-                { value: "action", label: "Hoạt động" },
-                // { value: "error", label: "Yêu cầu sửa" },
-              ]}
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      <Modal
-        title="Thêm mới thiết bị"
-        open={openCreate}
-        onOk={form.submit}
-        onCancel={hideModalCreate}
-        okText="OK"
-        cancelText="Cancel"
-      >
-        <Form
-          name="basic"
-          form={form}
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 16 }}
-          style={{ maxWidth: 600 }}
-          initialValues={{ remember: true }}
-          onFinish={onFinish}
-          //   onFinishFailed={onFinishFailed}
-          autoComplete="off"
-        >
-          <Form.Item
-            label="Tên thiết bị"
-            name="name"
-            rules={[{ required: true, message: "Vui lòng nhập Tên thiết bị!" }]}
-          >
-            <Input />
-          </Form.Item>
-          {/* <Form.Item label="Chủ thiết bị" name="owner">
-            <Select
-              style={{ width: "100%" }}
-              onChange={handleChange}
-              options={[
-                { value: "succes", label: "Hoạt động" },
-                { value: "error", label: "Yêu cầu sửa" },
-              ]}
-            />
-          </Form.Item> */}
-          <Form.Item
-            label="Phòng"
-            name="room"
-            rules={[{ required: true, message: "Vui lòng nhập Phòng!" }]}
-          >
-            <Select
-              style={{ width: "100%" }}
-              onChange={handleChange}
-              options={[
-                { value: "living-room", label: "Phòng khách" },
-                { value: "kitchen", label: "Phòng bếp" },
-                { value: "bathroom", label: "Phòng tắm" },
-                { value: "bedroom", label: "Phòng ngủ" },
-              ]}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="Mô tả"
-            name="description"
-            rules={[{ required: true, message: "Vui lòng nhập Mô tả!" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Ngày lắp đặt"
-            name="installationDate"
-            rules={[{ required: true, message: "Vui lòng nhập Ngày lắp đặt!" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item label="Ghi chú" name="note">
-            <Input />
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      <Modal
-        title="Delete"
-        open={openDelete}
-        onOk={handleOkDelete}
-        confirmLoading={confirmLoading}
-        onCancel={handleCancel}
-      >
-        <p> Xóa thiết bị này?</p>
-      </Modal>
     </div>
   );
 };

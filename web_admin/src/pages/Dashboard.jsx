@@ -44,7 +44,7 @@ const Dashboard = () => {
       dataIndex: "name",
       key: "name",
       render: (text, record) => (
-        <Link to={`/location/${record._id}`}>{text}</Link>
+        <Link to={`/location/${record.userId}`}>{text}</Link>
       ),
     },
     {
@@ -367,7 +367,6 @@ const Dashboard = () => {
   return (
     <div>
       <h2 className="page-header">Dashboard</h2>
-      <p>{mqttData}</p>
       <div className="row justify-center">
         <div className="col-8">
           <div className="row">
@@ -385,16 +384,13 @@ const Dashboard = () => {
                 title=" Locations"
               />
             </div>
-            <div className="col-4">
-              {/* <StatusCard
-                icon="bx bx-package"
-                count={listErrDevice?.length}
-                title=" thiết bị lỗi"
-              /> */}
-              <Button type="primary" onClick={showModalCreate}>
-                New Location
-              </Button>
-            </div>
+            <Button
+              type="primary"
+              onClick={showModalCreate}
+              className="new-location"
+            >
+              New Location
+            </Button>
           </div>
         </div>
         <div className="col-12">

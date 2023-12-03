@@ -34,8 +34,8 @@
     --main-color-orange: #d68102;
     --second-color-orange: #fca11a;
 
-    --sidebar-width: 300px;
-    --border-radius: 15px;
+    --sidebar-width: 150px;
+    --border-radius: 8px;
     --topnav-height: 110px;
     --transition-cubic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -88,9 +88,13 @@ input:focus {
     text-transform: capitalize;
 }
 
+.new-location {
+    margin: 64px 0 0px 16px;
+}
+
 .card {
     padding: 30px;
-    margin-bottom: 30px;
+    /* margin-bottom: 30px; */
     background-color: var(--main-bg);
     box-shadow: var(--box-shadow);
     border-radius: var(--border-radius);

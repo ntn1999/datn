@@ -17,7 +17,7 @@ router.get("/", async (req, res) => {
     let start = datebegin.valueOf();
     let end = dateend.valueOf();
     let range = end - start;
-    let miniRange = range / 20; //20 khoảng thời gian
+    let miniRange = range / 30; //20 khoảng thời gian
     const rs2 = await Sensor.findOne({
       createdDate: {
         $gte: datebegin.get("time"),
