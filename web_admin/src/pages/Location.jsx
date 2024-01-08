@@ -137,6 +137,7 @@ const Location = () => {
   const [dataSensor, setDataSensor] = useState([]);
   const [coords, setCoords] = useState(null);
   const [mqttData, setMqttData] = useState("");
+  const [optionSelected, setOptionSelected] = useState("humidityAir");
 
   useEffect(() => {
     connectMqtt();
@@ -257,6 +258,11 @@ const Location = () => {
 
   //   setLoading(false);
   // };
+
+  const changeBarChartData = (chartType) => {
+    console.log(chartType);
+    setOptionSelected(chartType);
+  };
 
   return (
     <div>
@@ -427,11 +433,66 @@ const Location = () => {
             <Tooltip />
             <Legend />
             <Bar
-              dataKey="gasVal"
+              dataKey={optionSelected}
               fill="#8884d8"
               name="Số lượng khách hàng đăng ký "
             />
           </BarChart>
+          <div
+            className="d-flex justify-content-around"
+            style={{ marginLeft: "120px", marginRight: "60px" }}
+          >
+            <button
+              type="button"
+              className={
+                "btn btn-outline-primary " +
+                (optionSelected === "humidityAir" ? "bg-primary text-white" : "")
+              }
+              onClick={() => changeBarChartData("humidityAir")}
+            >
+              AQI
+            </button>
+            <button
+              type="button"
+              className={
+                "btn btn-outline-primary " +
+                (optionSelected === "pm25" ? "bg-primary text-white" : "")
+              }
+              onClick={() => changeBarChartData("pm25")}
+            >
+              PM 2.5
+            </button>
+            <button
+              type="button"
+              className={
+                "btn btn-outline-primary " +
+                (optionSelected === "pm10" ? "bg-primary text-white" : "")
+              }
+              onClick={() => changeBarChartData("pm10")}
+            >
+              PM 10
+            </button>
+            <button
+              type="button"
+              className={
+                "btn btn-outline-primary " +
+                (optionSelected === "gasVal" ? "bg-primary text-white" : "")
+              }
+              onClick={() => changeBarChartData("gasVal")}
+            >
+              CO
+            </button>
+            <button
+              type="button"
+              className={
+                "btn btn-outline-primary " +
+                (optionSelected === "co2" ? "bg-primary text-white" : "")
+              }
+              onClick={() => changeBarChartData("co2")}
+            >
+              CO2
+            </button>
+          </div>
         </div>
       </div>
 
