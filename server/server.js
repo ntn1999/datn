@@ -58,16 +58,20 @@ db.once("open", () => {
 
       //Save to db
       //Create a new Sensor
-      const sensor = new Sensor({
-        humidityAir: content.humidityAir,
-        temperature: content.temperature,
-        gasVal: content.gasVal,
-        p25: content.p25,
-        p10: content.p10,
-      });
-
-      const savedSensor = await sensor.save();
-      console.log("[Saved DB] =>", savedSensor);
+      if (content.p25 !== -1 && content.humidityAir < 100) {
+        const sensor = new Sensor({
+          humidityAir: content.humidityAir,
+          temperature: content.temperature,
+          gasVal: content.gasVal,
+          p25: content.p25,
+          p10: content.p10,
+          co: content.co,
+          co2: content.co2,
+        });
+  
+        const savedSensor = await sensor.save();
+        console.log("[Saved DB] =>", savedSensor);
+      }
     } catch (err) {
       console.error(err);
     }

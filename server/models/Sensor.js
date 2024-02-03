@@ -22,6 +22,14 @@ const sensorSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    co: {
+      type: Number,
+      required: true,
+    },
+    co2: {
+      type: Number,
+      required: true,
+    },
     createdDate: {
       type: Date,
       default: Date.now,

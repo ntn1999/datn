@@ -40,6 +40,10 @@ router.get("/", async (req, res) => {
         humidityAir: 0,
         temperature: 0,
         gasVal: 0,
+        co: 0,
+        co2: 0,
+        p10: 0,
+        p25: 0,
         time: i,
       };
 
@@ -57,6 +61,10 @@ router.get("/", async (req, res) => {
             value.humidityAir += item.humidityAir;
             value.temperature += item.temperature;
             value.gasVal += item.gasVal;
+            value.co += item.co;
+            value.co2 += item.co2;
+            value.p10 += item.p10;
+            value.p25 += item.p25;
             count++;
           }
         });
@@ -66,6 +74,10 @@ router.get("/", async (req, res) => {
         value.humidityAir = value.humidityAir / count;
         value.temperature = value.temperature / count;
         value.gasVal = value.gasVal / count;
+        value.co = value.co / count;
+        value.co2 = value.co2 / count;
+        value.p10 = value.p10 / count;
+        value.p25 = value.p25 / count;
       }
       result.push(value);
     }

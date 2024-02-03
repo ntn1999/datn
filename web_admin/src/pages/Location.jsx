@@ -301,7 +301,7 @@ const Location = () => {
                 key: "AIzaSyAMcAoFKRllxlboROQyrqLF68Sw6JyZrkk",
               }}
               defaultCenter={coords}
-              defaultZoom={11}
+              defaultZoom={15}
               center={coords}
             >
               <AnyReactComponent
@@ -346,7 +346,7 @@ const Location = () => {
           />
           <div style={{ margin: "12px" }}>
             <h6>CO2</h6>
-            <span className="fw-bold">{mqttData.humidityAir}ppm</span>
+            <span className="fw-bold">{mqttData.co2}ppm</span>
           </div>
         </div>
         <div className="col-3 d-flex justify-content-center">
@@ -357,7 +357,7 @@ const Location = () => {
           />
           <div style={{ margin: "12px" }}>
             <h6>CO</h6>
-            <span className="fw-bold">{mqttData.humidityAir}ppm</span>
+            <span className="fw-bold">{mqttData.co}ppm</span>
           </div>
         </div>
       </div>
@@ -456,9 +456,9 @@ const Location = () => {
               type="button"
               className={
                 "btn btn-outline-primary " +
-                (optionSelected === "pm25" ? "bg-primary text-white" : "")
+                (optionSelected === "p25" ? "bg-primary text-white" : "")
               }
-              onClick={() => changeBarChartData("pm25")}
+              onClick={() => changeBarChartData("p25")}
             >
               PM 2.5
             </button>
@@ -466,9 +466,9 @@ const Location = () => {
               type="button"
               className={
                 "btn btn-outline-primary " +
-                (optionSelected === "pm10" ? "bg-primary text-white" : "")
+                (optionSelected === "p10" ? "bg-primary text-white" : "")
               }
-              onClick={() => changeBarChartData("pm10")}
+              onClick={() => changeBarChartData("p10")}
             >
               PM 10
             </button>
@@ -476,9 +476,9 @@ const Location = () => {
               type="button"
               className={
                 "btn btn-outline-primary " +
-                (optionSelected === "gasVal" ? "bg-primary text-white" : "")
+                (optionSelected === "co" ? "bg-primary text-white" : "")
               }
-              onClick={() => changeBarChartData("gasVal")}
+              onClick={() => changeBarChartData("co")}
             >
               CO
             </button>
@@ -496,7 +496,7 @@ const Location = () => {
         </div>
       </div>
 
-      <div className="row">
+      {/* <div className="row">
         <div className="card col-12">
           <div className="card__body">
             <Table
@@ -506,7 +506,7 @@ const Location = () => {
             />
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
