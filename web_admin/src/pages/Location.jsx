@@ -155,9 +155,13 @@ const Location = () => {
 
     // Khi nhận được dữ liệu từ MQTT broker
     client.on("message", (topic, message) => {
-      if (message.toString() !== "aaaa") {
+      try {
+        JSON.parse(message.toString());
         const data = JSON.parse(message.toString());
         setMqttData(data);
+        return true;
+      } catch (e) {
+        return false;
       }
     });
 
@@ -184,7 +188,7 @@ const Location = () => {
 
   const getDataSensor = () => {
     const endTime = moment().valueOf();
-    const startTime = moment().subtract(1, "months").valueOf();
+    const startTime = moment().subtract(1, "days").valueOf();
 
     sensorApi
       .getData(`/sensor?begin=${startTime}&end=${endTime}`)
@@ -193,13 +197,7 @@ const Location = () => {
           item.humidityAir = item.humidityAir.toFixed(2);
           item.temperature = item.temperature.toFixed(2);
           item.gasVal = item.gasVal.toFixed(2);
-          if (item.humidityAir === "0.00") {
-            item.humidityAir = 45;
-          }
-          if (item.temperature === "0.00") {
-            item.temperature = 25;
-          }
-          item.name = moment(item.time).format("DD/MM");
+          item.name = moment(item.time).format("DD/MM HH:mm");
         });
         if (res.data.result.length) {
           console.log(res.data.result);
@@ -288,11 +286,6 @@ const Location = () => {
           <div className="row">
             <div style={{ marginLeft: "10px" }}>Vị trí: {user?.location}</div>
           </div>
-          <div className="row">
-            <div style={{ marginLeft: "10px" }}>
-              Địa chỉ: {customer?.ward}, {customer?.district}, {customer?.city}
-            </div>
-          </div>
         </div>
         <div className="col-6">
           <div style={{ height: "300px", width: "570px" }}>
@@ -362,7 +355,7 @@ const Location = () => {
         </div>
       </div>
 
-      <div className="row">
+      <div className="row" style={{ height: "220px" }}>
         <div className="col-4 d-flex justify-content-center">
           <ReactSpeedometer
             maxValue={100}
@@ -425,7 +418,7 @@ const Location = () => {
             <Line type="monotone" dataKey="temperature" stroke="#82ca9d" />
           </LineChart>
         </div>
-        <div className="col-6">
+        <div className="col-6" style={{ marginBottom: "24px" }}>
           <BarChart width={565} height={400} data={dataSensor}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
@@ -435,7 +428,7 @@ const Location = () => {
             <Bar
               dataKey={optionSelected}
               fill="#8884d8"
-              name="Số lượng khách hàng đăng ký "
+              name="value"
             />
           </BarChart>
           <div

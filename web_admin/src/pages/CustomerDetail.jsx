@@ -31,68 +31,41 @@ const CustomerDetail = () => {
       key: "id",
     },
     {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
+      title: "Location",
+      dataIndex: "location",
+      key: "location",
     },
     {
-      title: "Phòng",
-      dataIndex: "room",
-      key: "room",
+      title: "Humidity",
+      dataIndex: "humidity",
+      key: "humidity",
     },
     {
-      title: "Mô tả",
-      dataIndex: "description",
-      key: "description",
+      title: "Temperature",
+      dataIndex: "temperature",
+      key: "temperature",
     },
     {
-      title: "Ngày lắp đặt",
-      key: "installationDate",
-      dataIndex: "installationDate",
+      title: "AQI",
+      key: "aqi",
+      dataIndex: "aqi",
     },
     {
-      title: "Ghi chú",
-      key: "note",
-      dataIndex: "note",
+      title: "Mac Address",
+      key: "address",
+      dataIndex: "address",
     },
     {
-      title: "Trạng thái",
-      key: "statusRequest",
-      dataIndex: "statusRequest",
+      title: "Status",
+      key: "status",
+      dataIndex: "status",
       render: (_, record) =>
-        record.statusRequest == true ? (
+        record.status == true ? (
           <Tag icon={< CloseCircleOutlined/>} color="error">
-               Yêu cầu sửa
+               Warning
           </Tag>
-        ) : (
-          <Tag icon={< CheckCircleOutlined />} color="success">
-               Hoạt động 
-          </Tag>
-        ),
-    },
-
-    {
-      title: "Action",
-      key: "action",
-      render: (_, record) => (
-        <Row>
-          <Col>
-            <Button
-              type="link"
-              icon={<EditOutlined />}
-              onClick={() => showModalEdit(record)}
-            />
-          </Col>
-          <Col>
-            <Button
-              type="link"
-              icon={<DeleteOutlined />}
-              onClick={() => showModalDelete(record)}
-            />
-          </Col>
-        </Row>
-      ),
-    },
+        ) : "",
+    }
   ];
 
   const params = useParams();
@@ -148,8 +121,16 @@ const CustomerDetail = () => {
     });
     Promise.all([getUser, getDeviceList])
       .then((res) => {
+        const dataTest = [{
+          location: "Hà Nội",
+          humidity: 71,
+          temperature: 26.2,
+          aqi: 100,
+          address: "E7:DC:84:AH:25:D5",
+          status: true
+        }];
         setCustomer(res[0].data.user);
-        setListDevice(res[1].data.devices);
+        setListDevice(dataTest);
         setLisErrDevice(
           res[1].data.devices.filter((item) => item.status === false)
         );
@@ -279,10 +260,10 @@ const CustomerDetail = () => {
     <div>
       <div>
         <div className="row justify-between">
-          <div className="col-3">
-            <h2>Thông tin khách hàng</h2>
+          <div className="col-4">
+            <h2>Thông tin nhân viên</h2>
           </div>
-          <div className="col-3">
+          <div className="col-4">
             {user.role !== "admin" ? (
               <div style={{ paddingRight: "55px" }} className="row justify-end">
                 <Button type="primary" onClick={showModalCreateReport}>
@@ -296,33 +277,33 @@ const CustomerDetail = () => {
         </div>
 
         <div className="card">
-          <div className="row">
-            <div>Tên: </div>
-            <div style={{ marginLeft: "10px" }}>{customer?.name}</div>
+          <div>
+            <span>Tên: </span>
+            <span style={{ marginLeft: "10px" }}>{customer?.name}</span>
           </div>
-          <div className="row">
-            <div>Email: </div>
-            <div style={{ marginLeft: "10px" }}>{customer?.email}</div>
+          <div>
+            <span>Email: </span>
+            <span style={{ marginLeft: "10px" }}>{customer?.email}</span>
           </div>
-          <div className="row">
-            <div>Số điện thoại: </div>
-            <div style={{ marginLeft: "10px" }}>{customer?.phone}</div>
+          <div>
+            <span>Số điện thoại: </span>
+            <span style={{ marginLeft: "10px" }}>{customer?.phone}</span>
           </div>
-          <div className="row">
-            <div>Vị trí: </div>
-            <div style={{ marginLeft: "10px" }}>{customer?.location}</div>
+          <div>
+            <span>Vị trí: </span>
+            <span style={{ marginLeft: "10px" }}>{customer?.location}</span>
           </div>
-          <div className="row">
-            <div>Địa chỉ: </div>
-            <div style={{ marginLeft: "10px" }}>{customer?.ward}, {customer?.district}, {customer?.city}</div>
+          <div>
+            <span>Địa chỉ: </span>
+            <span style={{ marginLeft: "10px" }}>{customer?.ward}, {customer?.district}, {customer?.city}</span>
           </div>
         </div>
       </div>
-      <div className="row justify-between">
-        <div className="col-3">
-          <h2 className="page-header">Danh sách thiết bị </h2>
+      <div className="row justify-between mt-5">
+        <div className="col-8">
+          <h2 className="page-header">Danh sách địa điểm giám sát</h2>
         </div>
-        <div className="col-3">
+        <div className="col-2">
           <div style={{ paddingRight: "55px" }} className="row justify-end">
             <Button type="primary" onClick={showModalCreate}>
               + Thêm mới thiết bị

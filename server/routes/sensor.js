@@ -17,7 +17,7 @@ router.get("/", async (req, res) => {
     let start = datebegin.valueOf();
     let end = dateend.valueOf();
     let range = end - start;
-    let miniRange = range / 30; //20 khoảng thời gian
+    let miniRange = range / 24; //20 khoảng thời gian
     const rs2 = await Sensor.findOne({
       createdDate: {
         $gte: datebegin.get("time"),
@@ -84,6 +84,64 @@ router.get("/", async (req, res) => {
     return res.status(200).json({
       code: 200,
       result,
+    });
+  } catch (error) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+router.post("/add", async (req, res) => {
+  try {
+    const createdDate2 = moment(
+      req.body.createdDate,
+      "DD/MM/YYYY HH:mm:ss"
+    ).toDate();
+    const modifiedDate2 = moment(
+      req.body.modifiedDate,
+      "DD/MM/YYYY HH:mm:ss"
+    ).toDate();
+
+    const sensor = new Sensor({
+      humidityAir: req.body.humidityAir,
+      temperature: req.body.temperature,
+      gasVal: req.body.gasVal,
+      p25: req.body.p25,
+      p10: req.body.p10,
+      co: req.body.co,
+      co2: req.body.co2,
+      createdDate: createdDate2,
+      modifiedDate: modifiedDate2,
+    });
+
+    const savedSensor = await sensor.save();
+
+    return res.status(200).json({
+      code: 200,
+      savedSensor,
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+router.get("/listSensors", async (req, res) => {
+  try {
+    let dateend = moment(Number.parseInt(moment().valueOf()));
+    let datebegin = moment(
+      Number.parseInt(moment().subtract(1, "days").valueOf())
+    );
+
+    //lấy thông tin theo các mốc thời gian
+    const rs = await Sensor.find({
+      createdDate: {
+        $gte: datebegin.get("time"),
+        $lte: dateend.get("time"),
+      },
+    }).sort({ field: "asc", _id: -1 });
+
+    return res.status(200).json({
+      code: 200,
+      rs,
     });
   } catch (error) {
     res.status(400).json({ message: err.message });

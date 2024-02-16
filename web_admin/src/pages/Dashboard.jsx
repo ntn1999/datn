@@ -22,12 +22,14 @@ import {
   Row,
   Table,
   Select,
+  Tag,
 } from "antd";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import instance from "../service/client";
 import axios from "axios";
 import mqtt from "mqtt";
+import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 
 const Dashboard = () => {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -73,14 +75,15 @@ const Dashboard = () => {
       dataIndex: "aqi",
     },
     {
-      title: "Mac Address",
-      key: "macaddress",
-      dataIndex: "description",
-    },
-    {
       title: "Status",
       key: "status",
       dataIndex: "status",
+      render: (_, record) =>
+        record.status == true ? (
+          <Tag icon={< CloseCircleOutlined/>} color="error">
+               Warning
+          </Tag>
+        ) : "",
     },
     {
       title: "Action",
@@ -356,12 +359,15 @@ const Dashboard = () => {
   };
 
   const mapDataMqtt = (listDevice, mqttData) => {
-    if (mqttData) {
+    try {
+      JSON.parse(mqttData);
       const data = JSON.parse(mqttData);
-      listDevice[0] = { ...listDevice[0], ...data };
+      listDevice[0] = { ...listDevice[0], ...data, aqi: 100, status: true };
       listDevice = [...listDevice];
+      return listDevice;
+    } catch (e) {
+      return false;
     }
-    return listDevice;
   };
 
   return (
@@ -517,7 +523,7 @@ const Dashboard = () => {
       </Modal>
 
       <Modal
-        title="Thêm mới thiết bị"
+        title="Add new location"
         open={openCreate}
         onOk={form.submit}
         onCancel={hideModalCreate}
@@ -536,7 +542,7 @@ const Dashboard = () => {
           autoComplete="off"
         >
           <Form.Item
-            label="Tên thiết bị"
+            label="Location"
             name="name"
             rules={[{ required: true, message: "Vui lòng nhập Tên thiết bị!" }]}
           >
@@ -553,37 +559,18 @@ const Dashboard = () => {
             />
           </Form.Item> */}
           <Form.Item
-            label="Phòng"
+            label="Customer"
             name="room"
             rules={[{ required: true, message: "Vui lòng nhập Phòng!" }]}
           >
-            <Select
-              style={{ width: "100%" }}
-              onChange={handleChange}
-              options={[
-                { value: "living-room", label: "Phòng khách" },
-                { value: "kitchen", label: "Phòng bếp" },
-                { value: "bathroom", label: "Phòng tắm" },
-                { value: "bedroom", label: "Phòng ngủ" },
-              ]}
-            />
+            <Input />
           </Form.Item>
 
           <Form.Item
-            label="Mô tả"
+            label="Mac addresss"
             name="description"
             rules={[{ required: true, message: "Vui lòng nhập Mô tả!" }]}
           >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Ngày lắp đặt"
-            name="installationDate"
-            rules={[{ required: true, message: "Vui lòng nhập Ngày lắp đặt!" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item label="Ghi chú" name="note">
             <Input />
           </Form.Item>
         </Form>
