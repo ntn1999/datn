@@ -362,7 +362,7 @@ const Dashboard = () => {
     try {
       JSON.parse(mqttData);
       const data = JSON.parse(mqttData);
-      listDevice[0] = { ...listDevice[0], ...data, aqi: 100, status: true };
+      listDevice[0] = { ...listDevice[0], ...data, aqi: 77, status: true };
       listDevice = [...listDevice];
       return listDevice;
     } catch (e) {
@@ -558,16 +558,16 @@ const Dashboard = () => {
               ]}
             />
           </Form.Item> */}
-          <Form.Item
+          {/* <Form.Item
             label="Customer"
             name="room"
             rules={[{ required: true, message: "Vui lòng nhập Phòng!" }]}
           >
             <Input />
-          </Form.Item>
+          </Form.Item> */}
 
           <Form.Item
-            label="Mac addresss"
+            label="Customer"
             name="description"
             rules={[{ required: true, message: "Vui lòng nhập Mô tả!" }]}
           >

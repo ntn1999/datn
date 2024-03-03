@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ReactSpeedometer from "react-d3-speedometer";
 import GoogleMapReact from "google-map-react";
 import temperature from "../assets/images/temperature.png";
+import location from "../assets/images/location.png";
 import humidity from "../assets/images/humidity.png";
 import co2 from "../assets/images/co2-3.png";
 import co from "../assets/images/co-2.png";
@@ -141,7 +142,7 @@ const Location = () => {
 
   useEffect(() => {
     connectMqtt();
-    getLocaion();
+    // getLocaion();
     getDataSensor();
   }, []);
 
@@ -192,8 +193,9 @@ const Location = () => {
 
     sensorApi
       .getData(`/sensor?begin=${startTime}&end=${endTime}`)
-      .then((res) => {
+      .then((res) => { 
         res.data.result.forEach((item) => {
+          const aqi = (item.p25/50) * 100;
           item.humidityAir = item.humidityAir.toFixed(2);
           item.temperature = item.temperature.toFixed(2);
           item.gasVal = item.gasVal.toFixed(2);
@@ -289,7 +291,7 @@ const Location = () => {
         </div>
         <div className="col-6">
           <div style={{ height: "300px", width: "570px" }}>
-            <GoogleMapReact
+            {/* <GoogleMapReact
               bootstrapURLKeys={{
                 key: "AIzaSyAMcAoFKRllxlboROQyrqLF68Sw6JyZrkk",
               }}
@@ -301,9 +303,14 @@ const Location = () => {
                 lat={coords?.lat}
                 lng={coords?.lng}
                 icon={<TiLocation color="red" size={24} />}
-                text="Cau Giay, Ha Noi"
+                text="Thach That, Ha Noi"
               />
-            </GoogleMapReact>
+            </GoogleMapReact> */}
+            <img
+              src={location}
+              alt="company logo"
+              style={{ width: "570px", height: "300px" }}
+            />
           </div>
         </div>
       </div>
@@ -359,7 +366,7 @@ const Location = () => {
         <div className="col-4 d-flex justify-content-center">
           <ReactSpeedometer
             maxValue={100}
-            value={27}
+            value={77}
             valueFormat={"d"}
             customSegmentStops={[0, 25, 50, 75, 100]}
             segmentColors={["#a3be8c", "#ebcb8b", "#d08770", "#bf616a"]}
@@ -425,11 +432,7 @@ const Location = () => {
             <YAxis />
             <Tooltip />
             <Legend />
-            <Bar
-              dataKey={optionSelected}
-              fill="#8884d8"
-              name="value"
-            />
+            <Bar dataKey={optionSelected} fill="#8884d8" name="value" />
           </BarChart>
           <div
             className="d-flex justify-content-around"
@@ -439,7 +442,9 @@ const Location = () => {
               type="button"
               className={
                 "btn btn-outline-primary " +
-                (optionSelected === "humidityAir" ? "bg-primary text-white" : "")
+                (optionSelected === "humidityAir"
+                  ? "bg-primary text-white"
+                  : "")
               }
               onClick={() => changeBarChartData("humidityAir")}
             >

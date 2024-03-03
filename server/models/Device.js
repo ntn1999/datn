@@ -21,14 +21,14 @@ const userSchema = new mongoose.Schema({
   room: {
     type: String,
     enum: ["living-room", "kitchen", "bathroom", "bedroom"],
-    required: true,
+    // required: true,
   },
   note: {
     type: String,
   },
   installationDate: {
     type: String,
-    required: true,
+    // required: true,
   },
   status: {
     type: Boolean,

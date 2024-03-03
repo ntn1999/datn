@@ -239,7 +239,7 @@ const Customers = () => {
         <div className="col-3">
           <h2 className="page-header">Customers</h2>
         </div>
-        <div className="col-2">
+        <div className="col-1">
           <div style={{ paddingRight: "55px" }} className="row justify-end">
             <Button type="primary" onClick={showModalCreate}>
               New customer
